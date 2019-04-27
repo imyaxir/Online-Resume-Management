@@ -1,3 +1,5 @@
+pip install django == 2.1
+
 # Online-Resume-Management
 SE Section B Fast Lahore Spring 2019 Project.
 # Note
