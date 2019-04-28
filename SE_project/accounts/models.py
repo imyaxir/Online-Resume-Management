@@ -2,8 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
-
+from django.utils import timezone
+import datetime
 
 class Hr_Manger(models.Model):
         name=models.CharField(max_length=20)
@@ -58,7 +58,7 @@ class Reference(models.Model):
 
 class Job(models.Model):
     title =models.CharField(max_length=20)
-    descriptions=models.CharField(max_length=20)
+    descriptions=models.CharField(max_length=100)
     designation=models.CharField(max_length=50)
     required_skills=models.CharField(max_length=50)
     locations=models.CharField(max_length=50)
@@ -88,6 +88,8 @@ class Internship(models.Model):
             default = 'no-img.jpg',
             blank=True
         )
+    def __str__(self):
+        return self.title
 
 
 class Resume(models.Model):
@@ -108,6 +110,12 @@ class Resume(models.Model):
     def __str__(self):
         return self.applicant.username
 
+def create_resume(sender, **kwargs):
+    if kwargs['created']:
+        resume = resume.objects.create(user=kwargs['instance'])
+
+post_save.connect(create_resume, sender=User)
+
 
 class InterviewQuestion(models.Model):
     interview_question=models.CharField(max_length=50)
@@ -124,6 +132,9 @@ class Interview(models.Model):
     interview_question_candidate_answer =models.PositiveIntegerField()
     interview_question_id=models.ForeignKey(InterviewQuestion,on_delete=models.PROTECT)
     job_status=models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.job.title
 
 
 class Experience(models.Model):
@@ -171,3 +182,29 @@ def create_profile(sender, **kwargs):
         profile = Profile.objects.create(user=kwargs['instance'])
 
 post_save.connect(create_profile, sender=User)
+
+class Applications(models.Model):
+    applicant =models.ForeignKey(Applicant,on_delete=models.CASCADE)
+    job=models.ForeignKey(Job,on_delete=models.CASCADE)
+    internship=models.ForeignKey(Internship,on_delete=models.CASCADE)
+    applying_date_time=models.DateTimeField(default=timezone.now)
+    status=models.CharField(max_length=20)
+    applying_date=models.DateField(("Date"), default=datetime.date.today)
+
+
+class Interviews(models.Model):
+    applicant =models.ForeignKey(Applicant,on_delete=models.CASCADE)
+    hr_manager=models.ForeignKey(Hr_Manger,on_delete=models.CASCADE)
+    interview=models.ForeignKey(Interview,on_delete=models.CASCADE)
+    interview_conducted_date_time=models.DateTimeField(default=timezone.now)
+    interview_date=models.DateField(("Date"), default=datetime.date.today)
+    status=models.CharField(max_length=20)
+
+class offers(models.Model):
+    organization_name=models.CharField(max_length=100)
+    applicant =models.ForeignKey(Applicant,on_delete=models.CASCADE)
+    job=models.ForeignKey(Job,on_delete=models.CASCADE)
+    internship=models.ForeignKey(Internship,on_delete=models.CASCADE)
+    offer_date_time=models.DateTimeField(default=timezone.now)
+    interview_date=models.DateField(("Date"), default=datetime.date.today)
+    status=models.CharField(max_length=20)

@@ -1,5 +1,12 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.contrib import messages
+from django.contrib.auth import (authenticate, login, logout,
+                                 update_session_auth_hash)
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import (AuthenticationForm, UserCreationForm,
+                                       PasswordChangeForm)
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect, get_object_or_404
 # Create your views here.
 def home(request):
 	return render(request,"layout/home.html")
@@ -17,7 +24,7 @@ def resume(request):
 def edit_resume(request):
     user = request.user
     resume = get_object_or_404(models.Resume, user=user)
-    form = forms.ProfileForm(instance=profile)
+    form = forms.ResumeForm(instance=resume)
 
     if request.method == 'POST':
         form = forms.RseumeForm(instance=resume, data=request.POST)
